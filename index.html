@@ -15,9 +15,9 @@
     <!-- FontAwesome Ikony -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase App & Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDK (v8 dla prostoty w przeglądarce) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
         body {
@@ -53,7 +53,7 @@
         
         <!-- NAGŁÓWEK -->
         <header class="text-center mb-8 relative">
-            <button onclick="openAdminModal()" class="absolute right-0 top-0 text-gray-400 hover:text-amber-400 p-2 transition">
+            <button onclick="openAdminModal()" class="absolute right-0 top-0 text-gray-400 hover:text-amber-400 p-2 transition" title="Panel Admina">
                 <i class="fa-solid fa-user-shield text-xl"></i>
             </button>
             <h1 class="font-title text-3xl md:text-5xl font-extrabold text-amber-400 tracking-wide drop-shadow-md mb-2">
@@ -156,6 +156,27 @@
     </div>
 
     <script>
+        // Konfiguracja tymczasowej chmurowej bazy Firestore dla projektu
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-placeholder-key-milkoween",
+            authDomain: "milkoween-quiz.firebaseapp.com",
+            projectId: "milkoween-quiz",
+            storageBucket: "milkoween-quiz.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+        
+        // Inicjalizacja Firebase
+        let db = null;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+        } catch(e) {
+            console.log("Firebase nie zainicjalizowany, stosowanie zapasowego zapisu lokalnego.");
+        }
+
         const questions = [
             {
                 q: "1. Jaka jest Twoja ulubiona Witch z W.I.T.C.H. Czarodziejki?",
@@ -254,8 +275,6 @@
         let currentQuestion = 0;
         let scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
 
-        let submissionsLocal = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
-
         function startQuiz(e) {
             e.preventDefault();
             const input = document.getElementById('username');
@@ -344,10 +363,26 @@
             const submission = {
                 name: userName,
                 result: topElement,
-                date: new Date().toLocaleString('pl-PL')
+                date: new Date().toLocaleString('pl-PL'),
+                timestamp: Date.now()
             };
-            submissionsLocal.unshift(submission);
-            localStorage.setItem('quiz_submissions', JSON.stringify(submissionsLocal));
+
+            // Zapis do chmury (z zapasem na zapis lokalny)
+            saveSubmission(submission);
+        }
+
+        function saveSubmission(submission) {
+            // Zapis lokalny jako backup
+            let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+            localData.unshift(submission);
+            localStorage.setItem('quiz_submissions', JSON.stringify(localData));
+
+            // Zapis do Firebase (jeśli połączono)
+            if (db) {
+                db.collection("submissions").add(submission).catch(err => {
+                    console.log("Błąd zapisu do Firebase: ", err);
+                });
+            }
         }
 
         function restartQuiz() {
@@ -380,15 +415,34 @@
 
         function loadAdminData() {
             const list = document.getElementById('submissions-list');
-            list.innerHTML = '';
-            document.getElementById('total-count').innerText = submissionsLocal.length;
+            list.innerHTML = '<p class="text-gray-400 text-center py-4">Ładowanie wyników...</p>';
 
-            if (submissionsLocal.length === 0) {
+            // Jeśli jest baza w chmurze, pobierz z chmury
+            if (db) {
+                db.collection("submissions").orderBy("timestamp", "desc").get().then(snapshot => {
+                    renderSubmissionsList(snapshot.docs.map(doc => doc.data()));
+                }).catch(err => {
+                    console.log("Pobieranie z chmury nie powiodło się, pobieram z pamięci podręcznej.");
+                    let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+                    renderSubmissionsList(localData);
+                });
+            } else {
+                let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+                renderSubmissionsList(localData);
+            }
+        }
+
+        function renderSubmissionsList(submissions) {
+            const list = document.getElementById('submissions-list');
+            list.innerHTML = '';
+            document.getElementById('total-count').innerText = submissions.length;
+
+            if (submissions.length === 0) {
                 list.innerHTML = '<p class="text-gray-500 text-center py-4">Brak zgłoszeń.</p>';
                 return;
             }
 
-            submissionsLocal.forEach(sub => {
+            submissions.forEach(sub => {
                 const item = document.createElement('div');
                 item.className = "p-3 rounded-lg bg-black/40 border border-gray-700/50 flex justify-between items-center";
                 item.innerHTML = `
