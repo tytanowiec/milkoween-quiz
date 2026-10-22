@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jakim żywiołem jesteś? – Miłkoween</title>
+    
+    <!-- Google Fonts z obsługą polskich znaków (latin-ext) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Ikony -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase App & Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #0f0c20 0%, #15102a 50%, #090514 100%);
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+        .font-title {
+            font-family: 'Cinzel', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.25s ease;
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-4 md:p-8">
+
+    <!-- Kontener Główny -->
+    <div class="max-w-2xl mx-auto w-full my-auto">
+        
+        <!-- NAGŁÓWEK -->
+        <header class="text-center mb-8 relative">
+            <button onclick="openAdminModal()" class="absolute right-0 top-0 text-gray-400 hover:text-amber-400 p-2 transition">
+                <i class="fa-solid fa-user-shield text-xl"></i>
+            </button>
+            <h1 class="font-title text-3xl md:text-5xl font-extrabold text-amber-400 tracking-wide drop-shadow-md mb-2">
+                Miłkoween
+            </h1>
+            <h2 class="font-title text-xl md:text-2xl font-semibold text-purple-200 tracking-wider">
+                Jakim żywiołem jesteś?
+            </h2>
+        </header>
+
+        <!-- EKRAN STARTOWY -->
+        <div id="start-screen" class="glass-card rounded-2xl p-6 md:p-8 text-center shadow-2xl">
+            <i class="fa-solid fa-hat-wizard text-5xl text-purple-400 mb-4"></i>
+            <p class="text-gray-300 text-base md:text-lg mb-6">
+                Witaj w mistycznym teście żywiołów! Podaj swoje imię lub nick, aby rozpocząć przygodę.
+            </p>
+            <form onsubmit="startQuiz(event)" class="space-y-4">
+                <input type="text" id="username" required placeholder="Wpisz swoje imię / nick..." 
+                    class="w-full px-5 py-3 rounded-xl bg-black/40 border border-purple-500/30 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition">
+                <button type="submit" class="w-full glass-button py-4 rounded-xl font-bold text-amber-400 text-lg shadow-lg hover:shadow-amber-500/20">
+                    Rozpocznij Quiz <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- EKRAN PYTAŃ -->
+        <div id="quiz-screen" class="hidden glass-card rounded-2xl p-6 md:p-8 shadow-2xl">
+            <!-- Pasek postępu -->
+            <div class="mb-6">
+                <div class="flex justify-between text-xs md:text-sm text-gray-400 mb-2">
+                    <span id="progress-text">Pytanie 1 z 10</span>
+                    <span id="progress-percent">10%</span>
+                </div>
+                <div class="w-full bg-black/40 rounded-full h-2.5 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-purple-500 to-amber-400 h-2.5 rounded-full transition-all duration-300" style="width: 10%"></div>
+                </div>
+            </div>
+
+            <h3 id="question-title" class="text-lg md:text-2xl font-bold mb-6 text-purple-100">
+                Treść pytania...
+            </h3>
+
+            <div id="answers-container" class="space-y-3">
+                <!-- Odpowiedzi wstrzykiwane dynamicznie -->
+            </div>
+        </div>
+
+        <!-- EKRAN WYNIKU -->
+        <div id="result-screen" class="hidden glass-card rounded-2xl p-6 md:p-8 text-center shadow-2xl">
+            <div id="element-icon" class="text-6xl mb-4"></div>
+            <h3 class="text-gray-400 text-lg uppercase tracking-widest mb-1">Twój żywioł to:</h3>
+            <h2 id="element-title" class="font-title text-3xl md:text-5xl font-black mb-6 tracking-wide"></h2>
+            
+            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 mb-6">
+                <p class="text-amber-300 font-semibold text-sm md:text-base">
+                    W celu otrzymania nagrody za sprzedanie danych udaj się do grabarza.
+                </p>
+            </div>
+
+            <button onclick="restartQuiz()" class="glass-button px-6 py-3 rounded-xl font-semibold text-gray-200 hover:text-white">
+                <i class="fa-solid fa-rotate-right ml-1 mr-2"></i> Wypełnij ponownie
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MODAL ADMINISTRATORA -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
+            <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+
+            <!-- Zgłoszenie Hasła -->
+            <div id="admin-login" class="my-auto text-center py-8">
+                <i class="fa-solid fa-lock text-4xl text-amber-400 mb-4"></i>
+                <h3 class="text-xl font-bold mb-4">Panel Administratora</h3>
+                <form onsubmit="verifyAdminPassword(event)" class="space-y-4 max-w-xs mx-auto">
+                    <input type="password" id="admin-pass" placeholder="Podaj hasło..." required 
+                        class="w-full px-4 py-2 rounded-lg bg-black/50 border border-gray-600 text-white focus:outline-none focus:border-amber-400">
+                    <button type="submit" class="w-full glass-button py-2 rounded-lg font-bold text-amber-400">
+                        Zaloguj
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista Wyników -->
+            <div id="admin-content" class="hidden flex-col h-full overflow-hidden">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+                    <h3 class="text-xl font-bold text-amber-400">Wypełnione ankiety (<span id="total-count">0</span>)</h3>
+                    <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-rotate"></i> Odśwież
+                    </button>
+                </div>
+                <div id="submissions-list" class="overflow-y-auto space-y-2 pr-1 flex-1">
+                    <!-- Dynamiczne wiersze z wynikami -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "1. Jaka jest Twoja ulubiona Witch z W.I.T.C.H. Czarodziejki?",
+                answers: [
+                    { text: "Irma Lair", element: "Woda" },
+                    { text: "Taranee Cook", element: "Ogień" },
+                    { text: "Cornelia Hale", element: "Ziemia" },
+                    { text: "Hay Lin", element: "Powietrze" }
+                ]
+            },
+            {
+                q: "2. Który sport jest Twoim ulubionym?",
+                answers: [
+                    { text: "Dwa ognie", element: "Ogień" },
+                    { text: "Grotołażenie", element: "Ziemia" },
+                    { text: "Windsurfing", element: "Powietrze" },
+                    { text: "Surfing", element: "Woda" }
+                ]
+            },
+            {
+                q: "3. Twoja ulubiona piosenka Disneya:",
+                answers: [
+                    { text: "Z dna piekieł", element: "Ogień" },
+                    { text: "Na morza dnie", element: "Woda" },
+                    { text: "Kolorowy wiatr", element: "Powietrze" },
+                    { text: "Tam przez cienisty Bór", element: "Ziemia" }
+                ]
+            },
+            {
+                q: "4. Którego pluszaka najbardziej kocha Miłka?",
+                answers: [
+                    { text: "Brokum", element: "Powietrze" },
+                    { text: "Brokumozaur", element: "Ziemia" },
+                    { text: "Kazimiera", element: "Ogień" },
+                    { text: "Kwakaczka", element: "Woda" }
+                ]
+            },
+            {
+                q: "5. Z którym memem najbardziej się obecnie utożsamiasz?",
+                isImage: true,
+                answers: [
+                    { img: "images/ogien.jpg", element: "Ogień" },
+                    { img: "images/woda.jpg", element: "Woda" },
+                    { img: "images/ziemia.jpg", element: "Ziemia" },
+                    { img: "images/powietrze.jpg", element: "Powietrze" }
+                ]
+            },
+            {
+                q: "6. Życie jest:",
+                answers: [
+                    { text: "Nowelą", element: "Woda" },
+                    { text: "Nobelon", element: "Ogień" },
+                    { text: "Przygodą", element: "Powietrze" },
+                    { text: "Małą ściemniarą", element: "Ziemia" }
+                ]
+            },
+            {
+                q: "7. W której grupie jest Twój znak zodiaku?",
+                answers: [
+                    { text: "Byk, Panna, Koziorożec", element: "Ziemia" },
+                    { text: "Baran, Lew, Strzelec", element: "Ogień" },
+                    { text: "Bliźnięta, Waga, Wodnik", element: "Powietrze" },
+                    { text: "Rak, Skorpion, Ryby", element: "Woda" }
+                ]
+            },
+            {
+                q: "8. Gdybyś był/a w mafii, to jak pozbędziesz się problemów?",
+                answers: [
+                    { text: "Spalić", element: "Ogień" },
+                    { text: "Utopić", element: "Woda" },
+                    { text: "Wysadzić w powietrze", element: "Powietrze" },
+                    { text: "Zakopać", element: "Ziemia" }
+                ]
+            },
+            {
+                q: "9. Twój alternatywny zawód:",
+                answers: [
+                    { text: "Prezes Polskiego Związku Wędkarstwa", element: "Woda" },
+                    { text: "Grabarz", element: "Ziemia" },
+                    { text: "Latawica", element: "Powietrze" },
+                    { text: "Piroman", element: "Ogień" }
+                ]
+            },
+            {
+                q: "10. Ulubiona piosenka Kutas Records:",
+                answers: [
+                    { text: "Antyczny Napaleniec", element: "Ogień" },
+                    { text: "Gejowski Nurek Kosmonauta", element: "Woda" },
+                    { text: "Zioło Jarane, Majtki Obsrane", element: "Ziemia" },
+                    { text: "Kutas Records mi powiewa", element: "Powietrze" }
+                ]
+            }
+        ];
+
+        let userName = "";
+        let currentQuestion = 0;
+        let scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
+
+        let submissionsLocal = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+
+        function startQuiz(e) {
+            e.preventDefault();
+            const input = document.getElementById('username');
+            if (!input.value.trim()) return;
+            userName = input.value.trim();
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-title').innerText = q.q;
+            
+            const pct = Math.round(((currentQuestion + 1) / questions.length) * 100);
+            document.getElementById('progress-text').innerText = `Pytanie ${currentQuestion + 1} z ${questions.length}`;
+            document.getElementById('progress-percent').innerText = `${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+
+            if (q.isImage) {
+                container.className = "grid grid-cols-2 gap-3";
+                q.answers.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectAnswer(ans.element);
+                    btn.className = "glass-button p-2 rounded-xl overflow-hidden hover:scale-105 transition flex items-center justify-center bg-black/30 h-40 md:h-48";
+                    btn.innerHTML = `<img src="${ans.img}" alt="Mem" class="max-w-full max-h-full object-contain rounded-lg">`;
+                    container.appendChild(btn);
+                });
+            } else {
+                container.className = "space-y-3";
+                q.answers.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectAnswer(ans.element);
+                    btn.className = "w-full text-left glass-button p-4 rounded-xl font-medium text-gray-200 hover:text-white flex items-center justify-between";
+                    btn.innerHTML = `<span>${ans.text}</span> <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>`;
+                    container.appendChild(btn);
+                });
+            }
+        }
+
+        function selectAnswer(element) {
+            scores[element]++;
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let topElement = "Ogień";
+            let maxScore = -1;
+            for (const [el, val] of Object.entries(scores)) {
+                if (val > maxScore) {
+                    maxScore = val;
+                    topElement = el;
+                }
+            }
+
+            const titleEl = document.getElementById('element-title');
+            const iconEl = document.getElementById('element-icon');
+
+            titleEl.innerText = topElement;
+            if (topElement === "Ogień") {
+                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-red-500 drop-shadow";
+                iconEl.innerHTML = '<i class="fa-solid fa-fire-flame-curved text-red-500"></i>';
+            } else if (topElement === "Woda") {
+                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-blue-400 drop-shadow";
+                iconEl.innerHTML = '<i class="fa-solid fa-droplet text-blue-400"></i>';
+            } else if (topElement === "Ziemia") {
+                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-emerald-500 drop-shadow";
+                iconEl.innerHTML = '<i class="fa-solid fa-mountain text-emerald-500"></i>';
+            } else {
+                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-sky-200 drop-shadow";
+                iconEl.innerHTML = '<i class="fa-solid fa-wind text-sky-200"></i>';
+            }
+
+            const submission = {
+                name: userName,
+                result: topElement,
+                date: new Date().toLocaleString('pl-PL')
+            };
+            submissionsLocal.unshift(submission);
+            localStorage.setItem('quiz_submissions', JSON.stringify(submissionsLocal));
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdminPassword(e) {
+            e.preventDefault();
+            const pass = document.getElementById('admin-pass').value;
+            if (pass === "meduzejaja") {
+                document.getElementById('admin-login').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                document.getElementById('admin-content').classList.add('flex');
+                loadAdminData();
+            } else {
+                alert("Niepoprawne hasło!");
+            }
+        }
+
+        function loadAdminData() {
+            const list = document.getElementById('submissions-list');
+            list.innerHTML = '';
+            document.getElementById('total-count').innerText = submissionsLocal.length;
+
+            if (submissionsLocal.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-4">Brak zgłoszeń.</p>';
+                return;
+            }
+
+            submissionsLocal.forEach(sub => {
+                const item = document.createElement('div');
+                item.className = "p-3 rounded-lg bg-black/40 border border-gray-700/50 flex justify-between items-center";
+                item.innerHTML = `
+                    <div>
+                        <span class="font-bold text-white">${sub.name}</span>
+                        <span class="text-xs text-gray-500 block">${sub.date}</span>
+                    </div>
+                    <span class="font-semibold text-amber-400 px-3 py-1 rounded bg-amber-400/10 border border-amber-400/20">${sub.result}</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
