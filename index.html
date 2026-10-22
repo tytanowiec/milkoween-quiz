@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jakim żywiołem jesteś? – Miłkoween</title>
     
-    <!-- Google Fonts z obsługą polskich znaków (latin-ext) -->
+    <!-- Google Fonts z obsługą polskich znaków -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Ikony -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK (v8 dla prostoty w przeglądarce) -->
+    <!-- Firebase SDK (v8) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -53,7 +52,6 @@
         
         <!-- NAGŁÓWEK -->
         <header class="text-center mb-8 relative pt-2">
-            <!-- Przycisk Panelu Admina (Ikona Kłódki/Tarczy) -->
             <button onclick="openAdminModal()" type="button" class="absolute right-0 top-0 text-amber-400/70 hover:text-amber-400 p-3 text-2xl transition z-20 cursor-pointer" title="Panel Admina">
                 <i class="fa-solid fa-user-shield"></i>
             </button>
@@ -82,7 +80,6 @@
 
         <!-- EKRAN PYTAŃ -->
         <div id="quiz-screen" class="hidden glass-card rounded-2xl p-6 md:p-8 shadow-2xl">
-            <!-- Pasek postępu -->
             <div class="mb-6">
                 <div class="flex justify-between text-xs md:text-sm text-gray-400 mb-2">
                     <span id="progress-text">Pytanie 1 z 10</span>
@@ -97,21 +94,67 @@
                 Treść pytania...
             </h3>
 
-            <div id="answers-container" class="space-y-3">
-                <!-- Odpowiedzi wstrzykiwane dynamicznie -->
-            </div>
+            <div id="answers-container" class="space-y-3"></div>
         </div>
 
-        <!-- EKRAN WYNIKU -->
-        <div id="result-screen" class="hidden glass-card rounded-2xl p-6 md:p-8 text-center shadow-2xl">
-            <div id="element-icon" class="text-6xl mb-4"></div>
-            <h3 class="text-gray-400 text-lg uppercase tracking-widest mb-1">Twój żywioł to:</h3>
-            <h2 id="element-title" class="font-title text-3xl md:text-5xl font-black mb-6 tracking-wide"></h2>
-            
-            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 mb-6">
+        <!-- EKRAN WYNIKU Z DANYMI I STATYSTYKAMI -->
+        <div id="result-screen" class="hidden glass-card rounded-2xl p-6 md:p-8 text-center shadow-2xl space-y-6">
+            <div>
+                <div id="element-icon" class="text-6xl mb-3"></div>
+                <h3 class="text-gray-400 text-sm md:text-base uppercase tracking-widest mb-1">Twój dominujący żywioł:</h3>
+                <h2 id="element-title" class="font-title text-3xl md:text-5xl font-black tracking-wide"></h2>
+            </div>
+
+            <!-- Podpis o nagrodzie -->
+            <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                 <p class="text-amber-300 font-semibold text-sm md:text-base">
                     W celu otrzymania nagrody za sprzedanie danych udaj się do grabarza.
                 </p>
+            </div>
+
+            <!-- Statystyki Użytkownika -->
+            <div class="bg-black/30 rounded-xl p-4 border border-white/5 text-left space-y-3">
+                <h4 class="text-xs uppercase tracking-wider text-gray-400 text-center font-bold mb-2">Twój dopasowany profil żywiołów</h4>
+                
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-red-400 font-semibold"><i class="fa-solid fa-fire mr-1"></i> Ogień</span>
+                        <span id="user-score-ogien" class="text-gray-300">0%</span>
+                    </div>
+                    <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden">
+                        <div id="bar-user-ogien" class="bg-red-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-blue-400 font-semibold"><i class="fa-solid fa-droplet mr-1"></i> Woda</span>
+                        <span id="user-score-woda" class="text-gray-300">0%</span>
+                    </div>
+                    <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden">
+                        <div id="bar-user-woda" class="bg-blue-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-mountain mr-1"></i> Ziemia</span>
+                        <span id="user-score-ziemia" class="text-gray-300">0%</span>
+                    </div>
+                    <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden">
+                        <div id="bar-user-ziemia" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-sky-200 font-semibold"><i class="fa-solid fa-wind mr-1"></i> Powietrze</span>
+                        <span id="user-score-powietrze" class="text-gray-300">0%</span>
+                    </div>
+                    <div class="w-full bg-black/50 h-2 rounded-full overflow-hidden">
+                        <div id="bar-user-powietrze" class="bg-sky-200 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
             </div>
 
             <button onclick="restartQuiz()" class="glass-button px-6 py-3 rounded-xl font-semibold text-gray-200 hover:text-white">
@@ -131,7 +174,7 @@
     <!-- MODAL ADMINISTRATORA -->
     <div id="admin-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
         <div class="glass-card rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
-            <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white text-2xl p-2">
+            <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white text-2xl p-2 z-10">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -148,17 +191,73 @@
                 </form>
             </div>
 
-            <!-- Lista Wyników -->
-            <div id="admin-content" class="hidden flex-col h-full overflow-hidden">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
-                    <h3 class="text-xl font-bold text-amber-400">Wypełnione ankiety (<span id="total-count">0</span>)</h3>
-                    <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white p-2">
-                        <i class="fa-solid fa-rotate"></i> Odśwież
-                    </button>
+            <!-- Główna Zawartość Panelu Admina z Zakładkami -->
+            <div id="admin-content" class="hidden flex-col h-full overflow-hidden space-y-4">
+                
+                <!-- Nagłówek i Nawigacja Zakładek -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-2 border-b border-gray-700 gap-2">
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-xl font-bold text-amber-400">Panel Admina</h3>
+                        <span class="text-xs bg-black/40 px-2 py-1 rounded text-gray-400 border border-white/10">Wypełnień: <b id="total-count" class="text-amber-400">0</b></span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <!-- Zakładki -->
+                        <div class="flex bg-black/40 p-1 rounded-lg border border-white/10 text-xs">
+                            <button id="tab-btn-overview" onclick="switchAdminTab('overview')" class="px-3 py-1.5 rounded-md font-semibold transition bg-amber-400 text-black">
+                                <i class="fa-solid fa-chart-pie mr-1"></i> Ogólne
+                            </button>
+                            <button id="tab-btn-questions" onclick="switchAdminTab('questions')" class="px-3 py-1.5 rounded-md font-semibold transition text-gray-300 hover:text-white">
+                                <i class="fa-solid fa-list-check mr-1"></i> Pytania
+                            </button>
+                        </div>
+
+                        <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white p-2" title="Odśwież dane">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
                 </div>
-                <div id="submissions-list" class="overflow-y-auto space-y-2 pr-1 flex-1">
-                    <!-- Dynamiczne wiersze z wynikami -->
+
+                <!-- ZAKŁADKA 1: OGÓLNE I LISTA OSOB -->
+                <div id="tab-content-overview" class="flex-col h-full overflow-hidden space-y-4 flex">
+                    <!-- Zbiorcze Statystyki Żywiołów -->
+                    <div id="admin-stats" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
+                        <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                            <i class="fa-solid fa-fire text-red-400 text-lg mb-1"></i>
+                            <div class="font-bold text-red-300">Ogień</div>
+                            <div id="stat-ogien" class="text-base font-extrabold text-white">0%</div>
+                        </div>
+                        <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                            <i class="fa-solid fa-droplet text-blue-400 text-lg mb-1"></i>
+                            <div class="font-bold text-blue-300">Woda</div>
+                            <div id="stat-woda" class="text-base font-extrabold text-white">0%</div>
+                        </div>
+                        <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                            <i class="fa-solid fa-mountain text-emerald-400 text-lg mb-1"></i>
+                            <div class="font-bold text-emerald-300">Ziemia</div>
+                            <div id="stat-ziemia" class="text-base font-extrabold text-white">0%</div>
+                        </div>
+                        <div class="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl">
+                            <i class="fa-solid fa-wind text-sky-200 text-lg mb-1"></i>
+                            <div class="font-bold text-sky-200">Powietrze</div>
+                            <div id="stat-powietrze" class="text-base font-extrabold text-white">0%</div>
+                        </div>
+                    </div>
+
+                    <h4 class="text-sm font-semibold text-purple-200">Lista wypełnionych ankiet:</h4>
+                    <div id="submissions-list" class="overflow-y-auto space-y-2 pr-1 flex-1">
+                        <!-- Wiersze z wynikami -->
+                    </div>
                 </div>
+
+                <!-- ZAKŁADKA 2: ROZKŁAD ODPOWIEDZI NA PYTANIA -->
+                <div id="tab-content-questions" class="hidden flex-col h-full overflow-y-auto space-y-4 pr-1">
+                    <p class="text-xs text-gray-400">Rozkład głośow uczestników na poszczególne opcje w pytaniach:</p>
+                    <div id="questions-analysis-container" class="space-y-4">
+                        <!-- Dynamicznie generowana analiza pytań -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -185,6 +284,7 @@
 
         const questions = [
             {
+                id: 1,
                 q: "1. Jaka jest Twoja ulubiona Witch z W.I.T.C.H. Czarodziejki?",
                 answers: [
                     { text: "Irma Lair", element: "Woda" },
@@ -194,6 +294,7 @@
                 ]
             },
             {
+                id: 2,
                 q: "2. Który sport jest Twoim ulubionym?",
                 answers: [
                     { text: "Dwa ognie", element: "Ogień" },
@@ -203,6 +304,7 @@
                 ]
             },
             {
+                id: 3,
                 q: "3. Twoja ulubiona piosenka Disneya:",
                 answers: [
                     { text: "Z dna piekieł", element: "Ogień" },
@@ -212,6 +314,7 @@
                 ]
             },
             {
+                id: 4,
                 q: "4. Którego pluszaka najbardziej kocha Miłka?",
                 answers: [
                     { text: "Brokum", element: "Powietrze" },
@@ -221,16 +324,18 @@
                 ]
             },
             {
+                id: 5,
                 q: "5. Z którym memem najbardziej się obecnie utożsamiasz?",
                 isImage: true,
                 answers: [
-                    { img: "images/ogien.jpg", element: "Ogień" },
-                    { img: "images/woda.jpg", element: "Woda" },
-                    { img: "images/ziemia.jpg", element: "Ziemia" },
-                    { img: "images/powietrze.jpg", element: "Powietrze" }
+                    { img: "images/ogien.jpg", text: "Disaster Girl (Ogień)", element: "Ogień" },
+                    { img: "images/woda.jpg", text: "Kot / Album (Woda)", element: "Woda" },
+                    { img: "images/ziemia.jpg", text: "Mem Ziemia", element: "Ziemia" },
+                    { img: "images/powietrze.jpg", text: "Mem Powietrze", element: "Powietrze" }
                 ]
             },
             {
+                id: 6,
                 q: "6. Życie jest:",
                 answers: [
                     { text: "Nowelą", element: "Woda" },
@@ -240,6 +345,7 @@
                 ]
             },
             {
+                id: 7,
                 q: "7. W której grupie jest Twój znak zodiaku?",
                 answers: [
                     { text: "Byk, Panna, Koziorożec", element: "Ziemia" },
@@ -249,6 +355,7 @@
                 ]
             },
             {
+                id: 8,
                 q: "8. Gdybyś był/a w mafii, to jak pozbędziesz się problemów?",
                 answers: [
                     { text: "Spalić", element: "Ogień" },
@@ -258,6 +365,7 @@
                 ]
             },
             {
+                id: 9,
                 q: "9. Twój alternatywny zawód:",
                 answers: [
                     { text: "Prezes Polskiego Związku Wędkarstwa", element: "Woda" },
@@ -267,6 +375,7 @@
                 ]
             },
             {
+                id: 10,
                 q: "10. Ulubiona piosenka Kutas Records:",
                 answers: [
                     { text: "Antyczny Napaleniec", element: "Ogień" },
@@ -280,6 +389,8 @@
         let userName = "";
         let currentQuestion = 0;
         let scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
+        let selectedAnswersHistory = []; // Rejestr konkretnych odpowiedzi użytkownika
+        let currentSubmissionsData = []; // Zmienna przechowująca dane pobrane dla admina
 
         function startQuiz(e) {
             e.preventDefault();
@@ -306,18 +417,18 @@
 
             if (q.isImage) {
                 container.className = "grid grid-cols-2 gap-3";
-                q.answers.forEach(ans => {
+                q.answers.forEach((ans, idx) => {
                     const btn = document.createElement('button');
-                    btn.onclick = () => selectAnswer(ans.element);
+                    btn.onclick = () => selectAnswer(ans.element, idx);
                     btn.className = "glass-button p-2 rounded-xl overflow-hidden hover:scale-105 transition flex items-center justify-center bg-black/30 h-40 md:h-48 cursor-pointer";
                     btn.innerHTML = `<img src="${ans.img}" alt="Mem" class="max-w-full max-h-full object-contain rounded-lg">`;
                     container.appendChild(btn);
                 });
             } else {
                 container.className = "space-y-3";
-                q.answers.forEach(ans => {
+                q.answers.forEach((ans, idx) => {
                     const btn = document.createElement('button');
-                    btn.onclick = () => selectAnswer(ans.element);
+                    btn.onclick = () => selectAnswer(ans.element, idx);
                     btn.className = "w-full text-left glass-button p-4 rounded-xl font-medium text-gray-200 hover:text-white flex items-center justify-between cursor-pointer";
                     btn.innerHTML = `<span>${ans.text}</span> <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>`;
                     container.appendChild(btn);
@@ -325,8 +436,14 @@
             }
         }
 
-        function selectAnswer(element) {
+        function selectAnswer(element, answerIdx) {
             scores[element]++;
+            selectedAnswersHistory.push({
+                qIndex: currentQuestion,
+                answerIdx: answerIdx,
+                element: element
+            });
+
             currentQuestion++;
             if (currentQuestion < questions.length) {
                 showQuestion();
@@ -353,22 +470,43 @@
 
             titleEl.innerText = topElement;
             if (topElement === "Ogień") {
-                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-red-500 drop-shadow";
+                titleEl.className = "font-title text-3xl md:text-5xl font-black text-red-500 drop-shadow";
                 iconEl.innerHTML = '<i class="fa-solid fa-fire-flame-curved text-red-500"></i>';
             } else if (topElement === "Woda") {
-                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-blue-400 drop-shadow";
+                titleEl.className = "font-title text-3xl md:text-5xl font-black text-blue-400 drop-shadow";
                 iconEl.innerHTML = '<i class="fa-solid fa-droplet text-blue-400"></i>';
             } else if (topElement === "Ziemia") {
-                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-emerald-500 drop-shadow";
+                titleEl.className = "font-title text-3xl md:text-5xl font-black text-emerald-500 drop-shadow";
                 iconEl.innerHTML = '<i class="fa-solid fa-mountain text-emerald-500"></i>';
             } else {
-                titleEl.className = "font-title text-3xl md:text-5xl font-black mb-6 text-sky-200 drop-shadow";
+                titleEl.className = "font-title text-3xl md:text-5xl font-black text-sky-200 drop-shadow";
                 iconEl.innerHTML = '<i class="fa-solid fa-wind text-sky-200"></i>';
             }
+
+            // Statystyki dla Użytkownika
+            const totalQ = questions.length;
+            const pOgien = Math.round((scores["Ogień"] / totalQ) * 100);
+            const pWoda = Math.round((scores["Woda"] / totalQ) * 100);
+            const pZiemia = Math.round((scores["Ziemia"] / totalQ) * 100);
+            const pPowietrze = Math.round((scores["Powietrze"] / totalQ) * 100);
+
+            document.getElementById('user-score-ogien').innerText = pOgien + '%';
+            document.getElementById('bar-user-ogien').style.width = pOgien + '%';
+
+            document.getElementById('user-score-woda').innerText = pWoda + '%';
+            document.getElementById('bar-user-woda').style.width = pWoda + '%';
+
+            document.getElementById('user-score-ziemia').innerText = pZiemia + '%';
+            document.getElementById('bar-user-ziemia').style.width = pZiemia + '%';
+
+            document.getElementById('user-score-powietrze').innerText = pPowietrze + '%';
+            document.getElementById('bar-user-powietrze').style.width = pPowietrze + '%';
 
             const submission = {
                 name: userName,
                 result: topElement,
+                scores: scores,
+                answersHistory: selectedAnswersHistory,
                 date: new Date().toLocaleString('pl-PL'),
                 timestamp: Date.now()
             };
@@ -391,6 +529,7 @@
         function restartQuiz() {
             currentQuestion = 0;
             scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
+            selectedAnswersHistory = [];
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('start-screen').classList.remove('hidden');
         }
@@ -416,20 +555,44 @@
             }
         }
 
+        function switchAdminTab(tab) {
+            const btnOverview = document.getElementById('tab-btn-overview');
+            const btnQuestions = document.getElementById('tab-btn-questions');
+            const contentOverview = document.getElementById('tab-content-overview');
+            const contentQuestions = document.getElementById('tab-content-questions');
+
+            if (tab === 'overview') {
+                btnOverview.className = "px-3 py-1.5 rounded-md font-semibold transition bg-amber-400 text-black";
+                btnQuestions.className = "px-3 py-1.5 rounded-md font-semibold transition text-gray-300 hover:text-white";
+                contentOverview.classList.remove('hidden');
+                contentOverview.classList.add('flex');
+                contentQuestions.classList.add('hidden');
+            } else {
+                btnQuestions.className = "px-3 py-1.5 rounded-md font-semibold transition bg-amber-400 text-black";
+                btnOverview.className = "px-3 py-1.5 rounded-md font-semibold transition text-gray-300 hover:text-white";
+                contentQuestions.classList.remove('hidden');
+                contentQuestions.classList.add('flex');
+                contentOverview.classList.add('hidden');
+                contentOverview.classList.remove('flex');
+                renderQuestionsAnalysis();
+            }
+        }
+
         function loadAdminData() {
             const list = document.getElementById('submissions-list');
             list.innerHTML = '<p class="text-gray-400 text-center py-4">Ładowanie wyników...</p>';
 
             if (db) {
                 db.collection("submissions").orderBy("timestamp", "desc").get().then(snapshot => {
-                    renderSubmissionsList(snapshot.docs.map(doc => doc.data()));
+                    currentSubmissionsData = snapshot.docs.map(doc => doc.data());
+                    renderSubmissionsList(currentSubmissionsData);
                 }).catch(err => {
-                    let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
-                    renderSubmissionsList(localData);
+                    currentSubmissionsData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+                    renderSubmissionsList(currentSubmissionsData);
                 });
             } else {
-                let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
-                renderSubmissionsList(localData);
+                currentSubmissionsData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
+                renderSubmissionsList(currentSubmissionsData);
             }
         }
 
@@ -440,20 +603,116 @@
 
             if (submissions.length === 0) {
                 list.innerHTML = '<p class="text-gray-500 text-center py-4">Brak zgłoszeń.</p>';
+                document.getElementById('stat-ogien').innerText = '0%';
+                document.getElementById('stat-woda').innerText = '0%';
+                document.getElementById('stat-ziemia').innerText = '0%';
+                document.getElementById('stat-powietrze').innerText = '0%';
                 return;
             }
 
+            let countScores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
+            submissions.forEach(s => {
+                if (countScores[s.result] !== undefined) {
+                    countScores[s.result]++;
+                }
+            });
+
+            const total = submissions.length;
+            document.getElementById('stat-ogien').innerText = Math.round((countScores["Ogień"] / total) * 100) + '%';
+            document.getElementById('stat-woda').innerText = Math.round((countScores["Woda"] / total) * 100) + '%';
+            document.getElementById('stat-ziemia').innerText = Math.round((countScores["Ziemia"] / total) * 100) + '%';
+            document.getElementById('stat-powietrze').innerText = Math.round((countScores["Powietrze"] / total) * 100) + '%';
+
             submissions.forEach(sub => {
                 const item = document.createElement('div');
-                item.className = "p-3 rounded-lg bg-black/40 border border-gray-700/50 flex justify-between items-center";
+                item.className = "p-3 rounded-lg bg-black/40 border border-gray-700/50 flex flex-col gap-1";
+                
+                let scoresDetail = "";
+                if (sub.scores) {
+                    scoresDetail = `
+                        <div class="text-[10px] text-gray-400 mt-1 flex gap-2">
+                            <span>🔥 ${sub.scores["Ogień"] || 0}</span>
+                            <span>💧 ${sub.scores["Woda"] || 0}</span>
+                            <span>🌱 ${sub.scores["Ziemia"] || 0}</span>
+                            <span>💨 ${sub.scores["Powietrze"] || 0}</span>
+                        </div>
+                    `;
+                }
+
                 item.innerHTML = `
-                    <div>
-                        <span class="font-bold text-white">${sub.name}</span>
-                        <span class="text-xs text-gray-500 block">${sub.date}</span>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-bold text-white">${sub.name}</span>
+                            <span class="text-xs text-gray-500 block">${sub.date}</span>
+                        </div>
+                        <span class="font-semibold text-amber-400 px-3 py-1 rounded bg-amber-400/10 border border-amber-400/20">${sub.result}</span>
                     </div>
-                    <span class="font-semibold text-amber-400 px-3 py-1 rounded bg-amber-400/10 border border-amber-400/20">${sub.result}</span>
+                    ${scoresDetail}
                 `;
                 list.appendChild(item);
+            });
+        }
+
+        // GENEROWANIE ANALIZY ODPOWIEDZI NA PYTANIA
+        function renderQuestionsAnalysis() {
+            const container = document.getElementById('questions-analysis-container');
+            container.innerHTML = '';
+
+            if (currentSubmissionsData.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">Brak danych do analizy pytań.</p>';
+                return;
+            }
+
+            const totalSubmissions = currentSubmissionsData.length;
+
+            questions.forEach((q, qIdx) => {
+                // Zliczanie głosu na poszczególne opcje w danym pytaniu
+                let answerCounts = new Array(q.answers.length).fill(0);
+
+                currentSubmissionsData.forEach(sub => {
+                    if (sub.answersHistory) {
+                        const record = sub.answersHistory.find(h => h.qIndex === qIdx);
+                        if (record && record.answerIdx !== undefined) {
+                            answerCounts[record.answerIdx]++;
+                        }
+                    }
+                });
+
+                const qCard = document.createElement('div');
+                qCard.className = "p-4 rounded-xl bg-black/40 border border-gray-700/60 space-y-3";
+                
+                let answersHtml = "";
+                q.answers.forEach((ans, aIdx) => {
+                    const count = answerCounts[aIdx];
+                    const percent = Math.round((count / totalSubmissions) * 100);
+
+                    let elemColor = "bg-purple-500";
+                    if (ans.element === "Ogień") elemColor = "bg-red-500";
+                    if (ans.element === "Woda") elemColor = "bg-blue-400";
+                    if (ans.element === "Ziemia") elemColor = "bg-emerald-500";
+                    if (ans.element === "Powietrze") elemColor = "bg-sky-200";
+
+                    answersHtml += `
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-300 font-medium">${ans.text || 'Mem ' + ans.element} <span class="text-gray-500 text-[10px]">(${ans.element})</span></span>
+                                <span class="text-gray-400 font-bold">${count} głosów (${percent}%)</span>
+                            </div>
+                            <div class="w-full bg-black/60 h-2 rounded-full overflow-hidden">
+                                <div class="${elemColor} h-2 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                qCard.innerHTML = `
+                    <h5 class="font-bold text-sm text-amber-300">${q.q}</h5>
+                    <div class="space-y-2 pt-1">
+                        ${answersHtml}
+                    </div>
+                `;
+
+                container.appendChild(qCard);
             });
         }
     </script>
