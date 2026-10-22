@@ -212,8 +212,14 @@
                             </button>
                         </div>
 
+                        <!-- Przycisk Odświeżania -->
                         <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white p-2" title="Odśwież dane">
                             <i class="fa-solid fa-rotate"></i>
+                        </button>
+
+                        <!-- Przycisk Czyszczenia Bazy -->
+                        <button onclick="clearAllSubmissions()" class="text-xs text-red-400 hover:text-red-300 p-2 border border-red-500/20 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition" title="Wyczyść całą bazę">
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -252,7 +258,7 @@
 
                 <!-- ZAKŁADKA 2: ROZKŁAD ODPOWIEDZI NA PYTANIA -->
                 <div id="tab-content-questions" class="hidden flex-col h-full overflow-y-auto space-y-4 pr-1">
-                    <p class="text-xs text-gray-400">Rozkład głośow uczestników na poszczególne opcje w pytaniach:</p>
+                    <p class="text-xs text-gray-400">Rozkład głosów uczestników na poszczególne opcje w pytaniach:</p>
                     <div id="questions-analysis-container" class="space-y-4">
                         <!-- Dynamicznie generowana analiza pytań -->
                     </div>
@@ -389,8 +395,8 @@
         let userName = "";
         let currentQuestion = 0;
         let scores = { "Ogień": 0, "Woda": 0, "Ziemia": 0, "Powietrze": 0 };
-        let selectedAnswersHistory = []; // Rejestr konkretnych odpowiedzi użytkownika
-        let currentSubmissionsData = []; // Zmienna przechowująca dane pobrane dla admina
+        let selectedAnswersHistory = [];
+        let currentSubmissionsData = [];
 
         function startQuiz(e) {
             e.preventDefault();
@@ -483,7 +489,6 @@
                 iconEl.innerHTML = '<i class="fa-solid fa-wind text-sky-200"></i>';
             }
 
-            // Statystyki dla Użytkownika
             const totalQ = questions.length;
             const pOgien = Math.round((scores["Ogień"] / totalQ) * 100);
             const pWoda = Math.round((scores["Woda"] / totalQ) * 100);
@@ -653,7 +658,6 @@
             });
         }
 
-        // GENEROWANIE ANALIZY ODPOWIEDZI NA PYTANIA
         function renderQuestionsAnalysis() {
             const container = document.getElementById('questions-analysis-container');
             container.innerHTML = '';
@@ -666,7 +670,6 @@
             const totalSubmissions = currentSubmissionsData.length;
 
             questions.forEach((q, qIdx) => {
-                // Zliczanie głosu na poszczególne opcje w danym pytaniu
                 let answerCounts = new Array(q.answers.length).fill(0);
 
                 currentSubmissionsData.forEach(sub => {
@@ -714,6 +717,34 @@
 
                 container.appendChild(qCard);
             });
+        }
+
+        // FUNKCJA CZYSZCZENIA BAZY
+        function clearAllSubmissions() {
+            if (confirm("Czy na pewno chcesz nieodwracalnie usunąć wszystkie zapisane wyniki z bazy?")) {
+                localStorage.removeItem('quiz_submissions');
+                currentSubmissionsData = [];
+
+                if (db) {
+                    db.collection("submissions").get().then(snapshot => {
+                        const batch = db.batch();
+                        snapshot.docs.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    }).then(() => {
+                        alert("Baza wyników została wyczyszczona!");
+                        loadAdminData();
+                    }).catch(err => {
+                        console.log("Błąd usuwania z Firebase:", err);
+                        alert("Wyczyszczono wyniki lokalne.");
+                        loadAdminData();
+                    });
+                } else {
+                    alert("Wyczyszczono wyniki lokalne.");
+                    loadAdminData();
+                }
+            }
         }
     </script>
 </body>
