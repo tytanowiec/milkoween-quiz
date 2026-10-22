@@ -52,14 +52,15 @@
     <div class="max-w-2xl mx-auto w-full my-auto">
         
         <!-- NAGŁÓWEK -->
-        <header class="text-center mb-8 relative">
-            <button onclick="openAdminModal()" class="absolute right-0 top-0 text-gray-400 hover:text-amber-400 p-2 transition" title="Panel Admina">
-                <i class="fa-solid fa-user-shield text-xl"></i>
+        <header class="text-center mb-8 relative pt-2">
+            <!-- Przycisk Panelu Admina (Ikona Kłódki/Tarczy) -->
+            <button onclick="openAdminModal()" type="button" class="absolute right-0 top-0 text-amber-400/70 hover:text-amber-400 p-3 text-2xl transition z-20 cursor-pointer" title="Panel Admina">
+                <i class="fa-solid fa-user-shield"></i>
             </button>
-            <h1 class="font-title text-3xl md:text-5xl font-extrabold text-amber-400 tracking-wide drop-shadow-md mb-2">
+            <h1 class="font-title text-3xl md:text-5xl font-extrabold text-amber-400 tracking-wide drop-shadow-md mb-2 pointer-events-none">
                 Miłkoween
             </h1>
-            <h2 class="font-title text-xl md:text-2xl font-semibold text-purple-200 tracking-wider">
+            <h2 class="font-title text-xl md:text-2xl font-semibold text-purple-200 tracking-wider pointer-events-none">
                 Jakim żywiołem jesteś?
             </h2>
         </header>
@@ -120,11 +121,18 @@
 
     </div>
 
+    <!-- STOPKA / ZAPASOWY PRZYCISK ADMINA -->
+    <footer class="text-center mt-8 text-xs text-gray-600">
+        <button onclick="openAdminModal()" class="hover:text-amber-400 transition underline cursor-pointer">
+            Panel Admina
+        </button>
+    </footer>
+
     <!-- MODAL ADMINISTRATORA -->
-    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div id="admin-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
         <div class="glass-card rounded-2xl p-6 md:p-8 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
-            <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-2xl"></i>
+            <button onclick="closeAdminModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white text-2xl p-2">
+                <i class="fa-solid fa-xmark"></i>
             </button>
 
             <!-- Zgłoszenie Hasła -->
@@ -144,7 +152,7 @@
             <div id="admin-content" class="hidden flex-col h-full overflow-hidden">
                 <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
                     <h3 class="text-xl font-bold text-amber-400">Wypełnione ankiety (<span id="total-count">0</span>)</h3>
-                    <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white">
+                    <button onclick="loadAdminData()" class="text-xs text-gray-400 hover:text-white p-2">
                         <i class="fa-solid fa-rotate"></i> Odśwież
                     </button>
                 </div>
@@ -156,7 +164,6 @@
     </div>
 
     <script>
-        // Konfiguracja tymczasowej chmurowej bazy Firestore dla projektu
         const firebaseConfig = {
             apiKey: "AIzaSyD-placeholder-key-milkoween",
             authDomain: "milkoween-quiz.firebaseapp.com",
@@ -166,7 +173,6 @@
             appId: "1:123456789:web:abcdef"
         };
         
-        // Inicjalizacja Firebase
         let db = null;
         try {
             if (!firebase.apps.length) {
@@ -303,7 +309,7 @@
                 q.answers.forEach(ans => {
                     const btn = document.createElement('button');
                     btn.onclick = () => selectAnswer(ans.element);
-                    btn.className = "glass-button p-2 rounded-xl overflow-hidden hover:scale-105 transition flex items-center justify-center bg-black/30 h-40 md:h-48";
+                    btn.className = "glass-button p-2 rounded-xl overflow-hidden hover:scale-105 transition flex items-center justify-center bg-black/30 h-40 md:h-48 cursor-pointer";
                     btn.innerHTML = `<img src="${ans.img}" alt="Mem" class="max-w-full max-h-full object-contain rounded-lg">`;
                     container.appendChild(btn);
                 });
@@ -312,7 +318,7 @@
                 q.answers.forEach(ans => {
                     const btn = document.createElement('button');
                     btn.onclick = () => selectAnswer(ans.element);
-                    btn.className = "w-full text-left glass-button p-4 rounded-xl font-medium text-gray-200 hover:text-white flex items-center justify-between";
+                    btn.className = "w-full text-left glass-button p-4 rounded-xl font-medium text-gray-200 hover:text-white flex items-center justify-between cursor-pointer";
                     btn.innerHTML = `<span>${ans.text}</span> <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>`;
                     container.appendChild(btn);
                 });
@@ -367,17 +373,14 @@
                 timestamp: Date.now()
             };
 
-            // Zapis do chmury (z zapasem na zapis lokalny)
             saveSubmission(submission);
         }
 
         function saveSubmission(submission) {
-            // Zapis lokalny jako backup
             let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
             localData.unshift(submission);
             localStorage.setItem('quiz_submissions', JSON.stringify(localData));
 
-            // Zapis do Firebase (jeśli połączono)
             if (db) {
                 db.collection("submissions").add(submission).catch(err => {
                     console.log("Błąd zapisu do Firebase: ", err);
@@ -417,12 +420,10 @@
             const list = document.getElementById('submissions-list');
             list.innerHTML = '<p class="text-gray-400 text-center py-4">Ładowanie wyników...</p>';
 
-            // Jeśli jest baza w chmurze, pobierz z chmury
             if (db) {
                 db.collection("submissions").orderBy("timestamp", "desc").get().then(snapshot => {
                     renderSubmissionsList(snapshot.docs.map(doc => doc.data()));
                 }).catch(err => {
-                    console.log("Pobieranie z chmury nie powiodło się, pobieram z pamięci podręcznej.");
                     let localData = JSON.parse(localStorage.getItem('quiz_submissions') || '[]');
                     renderSubmissionsList(localData);
                 });
